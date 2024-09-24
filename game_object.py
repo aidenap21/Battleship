@@ -129,7 +129,7 @@ class GameObject:  # Define the GameObject class
   # Method to print the board with rows and columns labeled
   def print_board(self, board):
     # Print the column headers
-    print("    A B C D E F G H I J")
+    print("   A B C D E F G H I J")
     row = 0  # Initialize row counter
     # Loop through each row in the board
     for row_list in board:

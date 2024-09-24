@@ -36,6 +36,7 @@ class Player(GameObject):
     self.__build_board_of_tiles(self.board)  # Build the player's board by calling __build_board_of_tiles
     self.attacked_coords = []  # Initialize an empty list for attacked coordinates
     self.ship_list = []  # Initialize an empty list for the player's ships
+    self.super_shot = True 
 
     # Opponent information
     self.opp = None # The other Player
@@ -173,8 +174,12 @@ class Player(GameObject):
     return direction_to_coord[direction]
 
   def attack_ship(self, coord):
+
     # need a boalean return for this so we can mark the opponents board when a hit(true)
     row, col = self.coord_translator(coord)
+    if coord[-1].lower() == 's' and self.super_shot:      # add super shot code here
+      self.super_shot = False
+    #   self.super_hit
     self.hit(coord) if isinstance(self.opp.board[row][col], Ship) else  self.miss(coord)
 
   def hit(self, coord):
