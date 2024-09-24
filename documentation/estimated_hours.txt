@@ -1,0 +1,11 @@
+1 hours planning x5: this was as long as it took, documentation was started late
+
+10 hours AI implementation: Seems like a restucturing of the entire code is needed.
+2 hours Super shot: shouldn't be that complex
+
+1 hour fixing naming convention: step by step boring process, should take about this long.
+
+8 hour trouble shooting/bugfixing: learning and fixing any bugs in the code will take some time. PLus new ones will arise.
+2 hours documenting: Little 15 minute documentation trips will add up in the end.
+
+24 man-hours for the project
