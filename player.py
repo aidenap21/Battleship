@@ -113,6 +113,7 @@ class Player(GameObject):
       self.ship_list.pop(0) # Remove it from our list of remaining ships
     else:
       print("You cannot place your ship out of bounds or over another ship. Try again.")
+      self.selected_ship().coords = []
 
     self.print_remaining_ships_to_hide()
 
