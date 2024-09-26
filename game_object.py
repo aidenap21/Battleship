@@ -56,6 +56,20 @@ class GameObject:  # Define the GameObject class
       "J": 9  # Column J corresponds to index 9
     }
 
+    # Dictionary mapping column letters to indices (0-9)
+    self.col_index_to_letter = {
+      0: "A",  # Column A corresponds to index 0
+      1: "B",  # Column B corresponds to index 1
+      2: "C",  # Column C corresponds to index 2
+      3: "D",  # Column D corresponds to index 3
+      4: "E",  # Column E corresponds to index 4
+      5: "F",  # Column F corresponds to index 5
+      6: "G",  # Column G corresponds to index 6
+      7: "H",  # Column H corresponds to index 7
+      8: "I",  # Column I corresponds to index 8
+      9: "J"  # Column J corresponds to index 9
+    }
+
     # List of hit phrases to randomly select from
     self.hit_syns = ["Hit!", "!!! H I T !!!", "BANNNNNNNNNNNGGGGGGGG!", "Bullseye!", "Noiiiiiiiceeee one mate"]
     # List of miss phrases to randomly select from

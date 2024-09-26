@@ -22,6 +22,8 @@ Creation Date:
 """
 
 from game_object import GameObject  # Import the GameObject class from game_object module
+import time
+import os
 
 class Game(GameObject):  # Define the Game class, inheriting from GameObject
   def __init__(self, player_bank):  # Constructor for Game class
@@ -62,19 +64,37 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
     self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
 
     coord = self.get_input(f"Player {self.active_player.id} -- Attack a coordinate: ")  # Prompt the active player for a coordinate to attack
+    super_shot = False
+
+    if (coord[-1].lower() == 's'):              # check for super shot flag
+      coord = coord[:-1]                           # remove the flag from the coord string
+      if self.active_player.super_shot:           # checks if super shot has already been used by the player
+        self.active_player.super_shot = False       # sets flag to False to mark that it has now been used
+        super_shot = True
+
+    os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
 
     # If the input is a valid coordinate
     if self.valid_coord(coord):
       # Check if the coordinate has already been attacked
       if coord not in self.active_player.attacked_coords:
         self.active_player.attacked_coords.append(coord)  # Add the coordinate to the list of attacked coordinates
-        self.active_player.attack_ship(coord)  # Call attack_ship() to attack the ship at the coordinate
+        self.active_player.attack_ship(coord, super_shot)  # Call attack_ship() to attack the ship at the coordinate
         print("=" * 50)  # Print a separator line
         self.turn_count += 1  # Increment the turn count
         self.__switch_turns()  # Switch turns to the other player
       else:
         print("Space already taken. Try again!")  # If the spot has already been attacked, print an error message
 
+    print("Your board")  # Print player's own board
+    self.print_board(self.active_player.board)  # Call print_board() to display active player's board
+    print("Opp's board")  # Print opponent's board
+    self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
+    self.br()
+    print("Pass the screen to the next player")
+
+    time.sleep(8)
+    os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
     self.__take_turn(self.turn_count)  # Call __take_turn() recursively to continue the game
 
   # Method to get the active player
@@ -89,9 +109,13 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
     # Loop through each player in player_bank
     for player in self.player_bank:
       player.hide_ships()  # Call hide_ships() for each player to hide their ships
+      os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
       print(f"Player {player.id} - All ships are hidden...")  # Print that all ships are hidden
       self.print_board(player.board)  # Print the player's board after ships are hidden
       self.br()  # Print a break line
+      print("Pass the screen to the next player")
+      time.sleep(5)
+      os.system('cls' if os.name == 'nt' else 'clear')
 
   # Method to get the number of ships from the user
   def __get_num_ships(self):
