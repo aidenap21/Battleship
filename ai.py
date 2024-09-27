@@ -222,24 +222,29 @@ class AI(GameObject):
 
   # AI decision functions ==========================================================
 
-  def aiTurn(self):
-    alphaCoords = ['a','b','c','d','e','f','g','h','i','j']
+  def aiTurn(self):   #Function that will handle all behavior for the ai shooting, returns a valid coordinate to shoot at
+    alphaCoords = ['a','b','c','d','e','f','g','h','i','j']   #Helper list of the y coord letters
 
-    if self.aiPrevShot != 'none':
-      self.aiHitCoords.append(self.aiPrevShot)
+    if self.aiPrevShot != 'none':                 #Check if the game has started and self.aiPrevShot is not 'none'
+      self.aiHitCoords.append(self.aiPrevShot)    #If the game had not just started, add the value of aiPrevShot into list aiHitCoords
+
+#-----------------------------------------------START OF EASY DIFFICULTY ------------------------------------------------------------------------ 
+#Get list of spaces that have been hit so far and choose a letter and number combo that has not been hit
     
-    if(self.difficulty == 'easy'):
-      #Get list of spaces that have been hit so far and choose a letter and number combo that has not been hit
+    if(self.difficulty == 'easy'):  #Check if difficulty has been set to 'easy'
       
-      validCoord = False
-      while not validCoord:
-        coord = random.choice(alphaCoords) + str(random.randint(1,10))
-        if coord not in self.aiHitCoords:
-          validCoord = True
-      self.aiPrevShot = coord
+      validCoord = False                    #Var to start/stop while loop
+      while not validCoord:                 #Start looping
+        coord = random.choice(alphaCoords) + str(random.randint(1,10))  #Set letter and number values to random values
+        
+        if coord not in self.aiHitCoords:   #Check if the randomly selected combo has already been touched by the ai
+          validCoord = True                 #If it has not been, break out of the loop
+      #self.aiPrevShot = coord               #Set the value of the aiPrevShot to the coord the ai found
 
-    elif(self.difficulty == 'medium'):
-      #if previous shot was a hit, attempt to shoot in one of the 4 orthagonal directions UNTIL ship is sunk 
+#-----------------------------------------------START OF MEDIUM DIFFICULTY ------------------------------------------------------------------------ 
+#AI will shoot randomly similar to easy mode, but will begin to shoot orthagonally once it finds a ship until it is sunk
+
+    elif(self.difficulty == 'medium'):  #Check if the difficulty has been set to 'medium'
 
       #This one sucks but heres my thought process:
       # -At the start of the game randomly shoot
@@ -254,65 +259,76 @@ class AI(GameObject):
       #     - The ship is not sunk: return to the original hit and keep randomly choosing a direction until another hit is made
       # -Once a ship is sunk, reset the sameShip flag to signify the ai is moving on 
     
-      if(self.aiPrevShot != 'none' or self._aiHit(self.aiPrevShot) == True): # If first shot or hit on last shot
-        if(self.sameShip == False): # If not the same ship
-          self.originalHit = self.aiPrevShot # ??
-          self.sameShip = True # Set
 
-        while(not(validCoord)):
-          if(not(self.randomMoves)):
-            #start back from first hit part of ship and continue from there
-            self.aiPrevShot = self.originalHit
-            
-            
-          validCoord = False
-          self.randomMoves = [0,1,2,3]
-          while(not(validCoord) and (self.randomMoves)):
-            
-            nextShot = random.choose(self.randomMoves) #0-right, 1-left, 2-down, 3-up
+      if(self.aiPrevShot != 'none' or self._aiHit(self.aiPrevShot) == True): #Check if it is the start of the game or the previous shot was a hit
+        if(self.sameShip == False):             #Check if the ai is still trying to sink the same ship as it was last turn
+          self.originalHit = self.aiPrevShot    #Set the coordinate of the first contact of the ship if a hit has been landed on a ship for the first time
+          self.sameShip = True                  #Set sameShip to true, which will lock in the above coordinate until the ship gets sunk
 
-            if nextShot == 0:
-              if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'j'):
-                coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])+1)] + self.aiPrevShot[1]
-              self.randomMoves.remove(0)
+        validCoord = False                      #Variable to start both loops
+        while(not(validCoord)):                 #Loop that will end whenever a valid coordinate is found
+          if(not(self.randomMoves)):            #Check if the set of possible random moves is completely empty
+            self.aiPrevShot = self.originalHit  #If so, this means the ai cannot make any valid moves and must return to the first coordinate it hit
+          
+          self.randomMoves = [0,1,2,3]          #Reset the set of random moves every new turn
 
-            elif(nextShot == 1):
-              if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'a'):
-                coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])-1)] + self.aiPrevShot[1]
-              self.randomMoves.remove(1)
+          while(not(validCoord) and (self.randomMoves)):  #loop until valid coord is found or the ai runs out of moves
+            nextShot = random.choose(self.randomMoves)    #chose a random move: 0-right, 1-left, 2-down, 3-up
 
-            elif(nextShot == 2):
-              if(int(self.aiPrevShot[1]) < 10):
-                coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) + 1)
-              self.randomMoves.remove(2)
+            #----------------------------------------------RIGHT SELECTION------------------------------------------------------
+            if(nextShot == 0):    #Check to the right of the current location
+              if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'j'):  #Make sure the current location isn't the rightmost position
+                coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])+1)] + self.aiPrevShot[1] #If it isn't, try to hit to the right
+              self.randomMoves.remove(0)  #Remove the possibility of going right again
+            #----------------------------------------------RIGHT SELECTION------------------------------------------------------
 
-            else:
-              if(int(self.aiPrevShot[1]) > 1):
-                coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) - 1)
-              self.randomMoves.remove(3)
+            #----------------------------------------------LEFT SELECTION------------------------------------------------------
+            elif(nextShot == 1):  #Check to the left of the current location
+              if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'a'): #Make sure the current location isn't the leftmost position
+                coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])-1)] + self.aiPrevShot[1] #If it isn't, try to hit to the left
+              self.randomMoves.remove(1)  #Remove the possibility of going left again
+            #----------------------------------------------LEFT SELECTION------------------------------------------------------
 
-            if coord not in self.aiHitCoords:
-                validCoord = True
-                self.aiPrevShot = coord
+            #----------------------------------------------DOWN SELECTION------------------------------------------------------
+            elif(nextShot == 2):  #Check below the current location
+              if(int(self.aiPrevShot[1]) < 10): #Make sure the current location isn't the bottommost position
+                coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) + 1) #If it isn't, try to hit down
+              self.randomMoves.remove(2)  #Remove the possibility of going down again
+            #----------------------------------------------DOWN SELECTION------------------------------------------------------
 
-      else:
-        validCoord = False
-        while not validCoord:
-          coord = random.choice(alphaCoords) + str(random.randint(1,10))
-          if coord not in self.aiHitCoords:
-            validCoord = True
-        self.aiPrevShot = coord
+            #----------------------------------------------UP SELECTION------------------------------------------------------
+            else:   #Check above the current location
+              if(int(self.aiPrevShot[1]) > 1):  #Make sure the current location isn't the topmost position
+                coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) - 1) #If it isn't, try to hit up
+              self.randomMoves.remove(3)  #Remove the possibility of going up again
+            #----------------------------------------------UP SELECTION------------------------------------------------------
 
+            if coord not in self.aiHitCoords: #Once coord has been found, make sure it has not already been hit
+                validCoord = True #If this is a valid coordinate, set validCoord to true and break out of both loops
+                #self.aiPrevShot = coord
+      
+      #---------------------------------------------------Random selection------------------------------------------------------
+      else: 
+        validCoord = False                  #Var to start/stop while loop
+        while not validCoord:               #Start Looping
+          coord = random.choice(alphaCoords) + str(random.randint(1,10))  #Set letter and number values to random values
+          
+          if coord not in self.aiHitCoords: #Check if the randomly selected combo has already been touched by the ai
+            validCoord = True               #If it has not bee, break out of the loop
+        #self.aiPrevShot = coord
+      #---------------------------------------------------Random selection------------------------------------------------------
     
-    elif(self.difficulty == 'hard'):
-      #Get coords of all ships in the list and iterate thru all of them
-      if(not(self.aiHitCoords)):
-        coord = self.tempShipCoordsList[0]
-      else:
-        coord = self.tempShipCoordsList(self.tempShipList.index(self.aiPrevShot) + 1)
-      self.aiPrevShot = coord
+#-----------------------------------------------START OF HARD DIFFICULTY------------------------------------------------------------------------ 
+#The ai will know the position of all ships and will hit one every turn it takes
 
-    return coord
+    elif(self.difficulty == 'hard'):        #Check if the difficulty has been set to 'hard'
+      if(not(self.aiHitCoords)):            #Check if the list of previous locations the ai has touched is empty
+        coord = self.tempShipCoordsList[0]  #If so, set the coordinate to the first item in the list of all ship coordinates
+      else:                                   
+        coord = self.tempShipCoordsList(self.tempShipList.index(self.aiPrevShot) + 1) #If not, find the position of the last shot coord in the ship coordinate list and go to the next index
+      
+    self.aiPrevShot = coord   #Set the last shot the ai took to the one that it found
+    return coord              #Return the coordinate the ai found
   
   def _aiHit(self, coord):
     #This function currently does not work, but it should be able to return true if a ship was hit, and false if it was missed
