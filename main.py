@@ -18,12 +18,21 @@ Creation Date:
 
 from player import Player  # Import the Player class from the player module
 from game import Game  # Import the Game class from the game module
+from ai import AI
 
 # Initialize Player 1 with ID 1 and set them as the active player
 p1 = Player(1, True)
 
+# Ask player for AI or human opponent
+
+opponent = input("Do you want to play against the AI? (Y/N): ")
+if opponent.lower() == "y":
+    difficulty = input("Select a difficulty (Easy, Medium, Hard): ")
+    difficulty = difficulty.lower()
+    p2 = AI(difficulty, 2, False)
+else:
 # Initialize Player 2 with ID 2 and set them as inactive
-p2 = Player(2, False)
+    p2 = Player(2, False)
 
 # Set Player 2 as Player 1's opponent
 p1.set_opponent(p2)
