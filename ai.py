@@ -8,14 +8,12 @@ class AI(GameObject):
     
     self.aiPrevShot = 'none'  #This is only changed within aiTurn and will hold the last shot the ai made
     self.aiHitCoords = []     #This is only changed within aiTurn and will contain all shots the ai has made
-    self.originalHit = ''
-    self.sameShip = False
-    self.missCount = 0
+    self.originalHit = ''     #Set whenever ai hits a ship for the first time
+    self.sameShip = False     #Lock originalHit until a ship is sunk
+    self.randomMoves = []     #List that contains the possibile random moves. Each move gets removed after test
 
     self.tempShipList = [] # Uhhh temporary lil variable that will need to be the list of all coordinates of enemy ships
     
-
-
 
   def aiTurn(self):
     alphaCoords = ['a','b','c','d','e','f','g','h','i','j']
@@ -54,47 +52,41 @@ class AI(GameObject):
           self.originalHit = self.aiPrevShot
           self.sameShip = True 
 
+        while(not(validCoord))
+          if(not(self.randomMoves)):
+            #start back from first hit part of ship and continue from there
+            self.aiPrevShot = self.originalHit
+            
+            
+          validCoord = False
+          self.randomMoves = [0,1,2,3]
+          while(not(validCoord) and (self.randomMoves)):
+            
+            nextShot = random.choose(self.randomMoves) #0-right, 1-left, 2-down, 3-up
 
-        if(self.missCount == 4):
-          #start back from first hit part of ship and continue from there
-          self.missCount = 0 
-          self.aiPrevShot = self.originalHit
-          
-          
-        validCoord = False
-        while not validCoord:
-          nextShot = random.randint(0,3) #0-right, 1-left, 2-down, 3-up
+            if nextShot == 0:
+              if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'j'):
+                coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])+1)] + self.aiPrevShot[1]
+              self.randomMoves.remove(0)
 
-          if nextShot == 0:
-            if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'j'):
-              coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])+1)] + self.aiPrevShot[1]
-              if coord not in self.aiHitCoords:
-                  validCoord = True
-              self.missCount += 1  
+            elif(nextShot == 1):
+              if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'a'):
+                coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])-1)] + self.aiPrevShot[1]
+              self.randomMoves.remove(1)
 
-          elif(nextShot == 1):
-            if(alphaCoords[alphaCoords.index(self.aiPrevShot[0])] != 'a'):
-              coord = alphaCoords[(alphaCoords.index(self.aiPrevShot[0])-1)] + self.aiPrevShot[1]
-              if coord not in self.aiHitCoords:
-                  validCoord = True
-              self.missCount += 1  
+            elif(nextShot == 2):
+              if(int(self.aiPrevShot[1]) < 10):
+                coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) + 1)
+              self.randomMoves.remove(2)
 
-          elif(nextShot == 2):
-            if(int(self.aiPrevShot[1]) < 10):
-              coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) + 1)
-              if coord not in self.aiHitCoords:
+            else:
+              if(int(self.aiPrevShot[1]) > 1):
+                coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) - 1)
+              self.randomMoves.remove(3)
+
+            if coord not in self.aiHitCoords:
                 validCoord = True
-              self.missCount += 1  
-
-          else:
-            if(int(self.aiPrevShot[1]) > 1):
-              coord = self.aiPrevShot[0] + str(int(self.aiPrevShot[1]) - 1)
-              if coord not in self.aiHitCoords:
-                validCoord = True
-              self.missCount += 1 
-
-        self.missCount = 0 
-        self.aiPrevShot = coord
+                self.aiPrevShot = coord
 
       else:
         validCoord = False
