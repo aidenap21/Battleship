@@ -259,7 +259,7 @@ class AI(GameObject):
           self.originalHit = self.aiPrevShot # ??
           self.sameShip = True # Set
 
-        while(not(validCoord))
+        while(not(validCoord)):
           if(not(self.randomMoves)):
             #start back from first hit part of ship and continue from there
             self.aiPrevShot = self.originalHit
