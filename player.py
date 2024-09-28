@@ -81,7 +81,7 @@ class Player(GameObject):
     # ---------------------------------------------------------- #
     return int(self.selected_ship().size[-1])
 
-  def __clear_selected_ship_from_board(self):
+  def _clear_selected_ship_from_board(self):
     # Restore the initial ship placement to be a Tile.
     # ---------------------------------------------------------- #
     for row in range(10):
@@ -96,7 +96,7 @@ class Player(GameObject):
     while self.ship_list != []: # Hide all ships
       os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
 
-      self.__clear_selected_ship_from_board() # Wipe invalid hide attempts. If the attempt was valid the ship would have been popped off ship_list. Otherwise it will still be the selected ship and the board will be cleaned.
+      self._clear_selected_ship_from_board() # Wipe invalid hide attempts. If the attempt was valid the ship would have been popped off ship_list. Otherwise it will still be the selected ship and the board will be cleaned.
 
       print(f"Player {self.id} - Hiding their {self.selected_ship().name}...")
       self.print_board(self.board)

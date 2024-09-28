@@ -7,6 +7,7 @@ import random
 
 class AI(Player):
   def __init__(self, difficulty, id, active):  # Constructor for GameObject class
+    super().__init__(id, active) # Call parent class constructor (player.py?)
     self.difficulty = difficulty  #This is changed to 'easy', 'medium', or 'hard' during game setup
     self.aiPrevShot = 'none'  #This is only changed within aiTurn and will hold the last shot the ai made
     self.aiHitCoords = []     #This is only changed within aiTurn and will contain all shots the ai has made
@@ -15,7 +16,6 @@ class AI(Player):
     self.randomMoves = []     #List that contains the possibile random moves. Each move gets removed after test
 
     self.tempShipList = [] # Uhhh temporary lil variable that will need to be the list of all coordinates of enemy ships
-    super().__init__(id, active) # Call parent class constructor (game_object.py?)
 
   # Initializing board and game ====================================================  
 
@@ -25,15 +25,15 @@ class AI(Player):
     while self.ship_list != []: # Hide all ships
       # os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
 
-      self.__clear_selected_ship_from_board() # Wipe invalid hide attempts. If the attempt was valid the ship would have been popped off ship_list. Otherwise it will still be the selected ship and the board will be cleaned.
+      self._clear_selected_ship_from_board() # Wipe invalid hide attempts. If the attempt was valid the ship would have been popped off ship_list. Otherwise it will still be the selected ship and the board will be cleaned.
 
-      # print(f"Player {self.id} - Hiding their {self.selected_ship().name}...")
-      # self.print_board(self.board)
+      print(f"Player {self.id} - Hiding their {self.selected_ship().name}...")
+      self.print_board(self.board)
 
       row = random.randint(0, 9)
       col = random.randint(0, 9)
 
-      coord = self.col_index_to_letter[row] + str(col)
+      coord = self.col_index_to_letter[row] + str(col + 1)
 
       if self.valid_coord(coord): # If it's on the board
         if type(self.board[row][col]) == Tile: # If the targeted location is a vacant Tile
@@ -68,61 +68,11 @@ class AI(Player):
 
   # End initializing board and game ================================================
 
+
   # Shooting functions =============================================================
 
-  # Method to take a turn
-  def __take_turn(self, turn_count):    # Overwriting to allow AI to decide coordinate and removing super shot
-    # Check if the active player's ship list is empty (game over)
-    if self.active_player.ship_list == []:
-      self.end_game()  # End the game
-
-    # print(f"\n ==== Round #{turn_count} ==== Player {self.active_player.id}'s turn ====\n")  # Print the current turn number and active player
-    # print("Your board")  # Print player's own board
-    # self.print_board(self.active_player.board)  # Call print_board() to display active player's board
-    # print("Opp's board")  # Print opponent's board
-    # self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
-
-    # coord = self.get_input(f"Player {self.active_player.id} -- Attack a coordinate: ")  # Prompt the active player for a coordinate to attack
-    # super_shot = False
-
-    # if (coord[-1].lower() == 's'):              # check for super shot flag
-    #   coord = coord[:-1]                           # remove the flag from the coord string
-    #   if self.active_player.super_shot:           # checks if super shot has already been used by the player
-    #     self.active_player.super_shot = False       # sets flag to False to mark that it has now been used
-    #     super_shot = True
-
-    # os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
-
-    # If the input is a valid coordinate
-    coord = self.aiTurn() # return value needs to be set accordingly so that it can be passed into here
-
-    if self.valid_coord(coord):
-      # Check if the coordinate has already been attacked
-      if coord not in self.active_player.attacked_coords:
-        self.active_player.attacked_coords.append(coord)  # Add the coordinate to the list of attacked coordinates
-        self.active_player.attack_ship(coord)  # Call attack_ship() to attack the ship at the coordinate
-        self.turn_count += 1  # Increment the turn count
-        self.__switch_turns()  # Switch turns to the other player
-      # else:
-      #   print("Space already taken. Try again!")  # If the spot has already been attacked, print an error message
-
-    # print("Your board")  # Print player's own board
-    # self.print_board(self.active_player.board)  # Call print_board() to display active player's board
-    # print("Opp's board")  # Print opponent's board
-    # self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
-    # self.br()
-    # print("Pass the screen to the next player")
-
-    # time.sleep(8)
-    # os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
-    self.__take_turn(self.turn_count) # NEEDS TO CHANGE, CURRENTLY OVERWRITING GAMEOBJECT FUNCTION WHICH CAUSES PROBLEMS # Call __take_turn() recursively to continue the game
-
-
-  def attack_ship(self, coord):   # Overwriting to not contain super shot logic
-    # need a boalean return for this so we can mark the opponents board when a hit(true)
-    row, col = self.coord_translator(coord)
-    self.hit(row, col) if isinstance(self.opp.board[row][col], Ship) else  self.miss(row, col)
-
+  def get_input(self, message):   # Overwrites get_input from GameObject so that coordinates are returned
+    return self.aiTurn()
 
   # End shooting functions =========================================================
 
