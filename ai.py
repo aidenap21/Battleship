@@ -1,9 +1,11 @@
 import random
-from game_object import GameObject
+# from game_object import GameObject
+from player import Player
 from tile import Tile
 from ship import Ship
+import random
 
-class AI(GameObject):
+class AI(Player):
   def __init__(self, difficulty, id, active):  # Constructor for GameObject class
     self.difficulty = difficulty  #This is changed to 'easy', 'medium', or 'hard' during game setup
     self.aiPrevShot = 'none'  #This is only changed within aiTurn and will hold the last shot the ai made
@@ -13,89 +15,32 @@ class AI(GameObject):
     self.randomMoves = []     #List that contains the possibile random moves. Each move gets removed after test
 
     self.tempShipList = [] # Uhhh temporary lil variable that will need to be the list of all coordinates of enemy ships
-
-    # Stuff yoinked from player class:
-    super().__init__() # Call parent class constructor (game_object.py?)
-    self.id = id # Set AI's ID to 2
-    self.active = active # Set player active boolean
-    self.board = [] # Init empty board list
-    self.__build_board_of_tiles(self.board) # Build board
-    self.opp = None # Will be set by main to Player 1
-    self.opps_board = [] # Init empty board list
-    self.__build_board_of_tiles(self.opps_board) # Build board
-    self.attacked_coords = [] # Init empty attacked coords list
-    self.ship_list = [] # Init empty ship list
+    super().__init__(id, active) # Call parent class constructor (game_object.py?)
 
   # Initializing board and game ====================================================  
 
-  # Method to set the opponent for the player
-  def set_opponent(self, opponent):
-    self.opp = opponent  # Set the opponent to the passed player object
-  
-  def __build_board_of_tiles(self, board):
-    # Fills out a given list with 10 nested lists of 10 Tile items
-    # ---------------------------------------------------------- #
-    for row in range(10):
-      board.append([]) # add row
-      for col in range(10): # Loop through columns 0-9
-        tile = Tile(row, col) # Create a new Tile object for each row and column
-        board[row].append(tile) # place tiles
-
-  # Method to set the list of ships for the player
-  def set_ship_list(self, num_ships):
-    # Add the proper number of properly sized ships to self.ship_list. Ship(name, size, symbol)
-    # ---------------------------------------------------------- #
-    self.ship_list = [
-      Ship(
-        self.ship_size_to_name[f"1x{i}"],  # Ship name (e.g. "Destroyer")
-        f"1x{i}",                          # Ship size (e.g. "1x3")
-        self.ship_size_to_symbol[f"1x{i}"] # Ship symbol (e.g. "#")
-      )
-      for i in range(1, num_ships + 1) # Loop from 1 to num_ships
-    ]
-    self.ship_list.reverse() # Desc. order
-  
-  def selected_ship(self):
-    # Return the ship that is currently selected, AKA at the front of self.ship_list
-    # ---------------------------------------------------------- #
-    return self.ship_list[0]
-  
-  def selected_ship_length(self):
-    # Return the length of the selected ship. (e.g. The length of a 1x3 ship is 3)
-    # ---------------------------------------------------------- #
-    return int(self.selected_ship().size[-1])
-  
-  def __clear_selected_ship_from_board(self):
-    # Restore the initial ship placement to be a Tile.
-    # ---------------------------------------------------------- #
-    for row in range(10):
-      for col in range(10):
-        if self.board[row][col] == self.selected_ship():
-          self.board[row][col] = Tile(row, col)
-    self.selected_ship().tiles = []
-
-  def hide_ships(self):
-    print("TODO")
-    '''
+  def hide_ships(self):     # Overwritten to choose random coordinates
     # Loop until all ships are hidden. Gathers the root coord for the selected ship to be oriented from.
     # ---------------------------------------------------------- #
     while self.ship_list != []: # Hide all ships
+      # os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
+
       self.__clear_selected_ship_from_board() # Wipe invalid hide attempts. If the attempt was valid the ship would have been popped off ship_list. Otherwise it will still be the selected ship and the board will be cleaned.
 
-      print(f"Player {self.id} - Hiding their {self.selected_ship().name}...")
-      self.print_board(self.board)
+      # print(f"Player {self.id} - Hiding their {self.selected_ship().name}...")
+      # self.print_board(self.board)
 
-      coord = self.get_input("Hide the ship: ")
+      row = random.randint(0, 9)
+      col = random.randint(0, 9)
+
+      coord = self.col_index_to_letter[row] + str(col)
 
       if self.valid_coord(coord): # If it's on the board
-        row, col = self.coord_translator(coord)
         if type(self.board[row][col]) == Tile: # If the targeted location is a vacant Tile
           self.__hide_ship(row, col) # Not to be confused with hide_ships(). Attempt to hide the full ship
-    '''
-  
-  def __hide_ship(self, row, col):
-    print("TODO")
-    '''
+
+
+  def __hide_ship(self, row, col):    # Overwritten to remove prints
     # Hide the selected ship
     # ---------------------------------------------------------- #
     self.__orient_ship(row, col) # orient the full length of the ship
@@ -103,14 +48,10 @@ class AI(GameObject):
     if self.hide_selected_ship_in_valid_location(): # place the ship if oriented in a valid position
       self.ship_list.pop(0) # Remove it from our list of remaining ships
     else:
-      print("You cannot place your ship out of bounds or over another ship. Try again.")
       self.selected_ship().coords = []
 
-    self.print_remaining_ships_to_hide()
-    '''
 
-  def __orient_ship(self, row, col):
-    '''
+  def __orient_ship(self, row, col):    # Overwritten to allow random orientation
     # If the selected ship length is > 1, orient the ship on the board while hiding it.
     # u: up
     # d: down
@@ -118,105 +59,70 @@ class AI(GameObject):
     # r: right
     # ---------------------------------------------------------- #
     # Default for 1x1 ships to orient themselves
-    direction = self.__select_direction() if self.selected_ship_length() > 1 else "u"
+    valid_directions = ["u","d","l","r"]
+    direction = random.choice(valid_directions) if self.selected_ship_length() > 1 else "u"
 
-    if direction in ["u","d","l","r"]: # Extra check
-      for i in range(self.selected_ship_length()):
-        coords = self.direction_to_coord(direction, row, col, i)
-        self.selected_ship().coords.append(coords)
-    else:
-      print("Pick one: u d l r")
-    '''
-
-  def hide_selected_ship_in_valid_location(self):
-    # Verify if the selected ship's list of coordinates are all on the board and vacant Tiles
-    # ---------------------------------------------------------- #
-    flag = False
-    if self.coords_are_inbounds(self.selected_ship().coords): # if we're at least trying to place the ship on the board...
-      for coord in self.selected_ship().coords:
-        tile = self.board[coord[0]][coord[1]]
-        if type(tile) == Tile: #...make sure we're not overlapping ships
-          # Append the tile that the ship is replacing into the Ship.tiles list to track its unique symbol and coords
-          tile.symbol = self.selected_ship().symbol
-          self.selected_ship().tiles.append(tile)
-          self.board[coord[0]][coord[1]] = self.selected_ship() # Set the Tile's location on the board to be the Ship
-          flag = True
-        else:
-          return False # Every coord needs to be a vacant tile`
-    else:
-      self.selected_ship().coords = [] # We're going to retry hiding the ship if we're out of bounds, so we wipe the ship's coords list
-    return flag
-  
-  def direction_to_coord(self, direction, row, col, i):
-    # Translate up, down, left, or right in relation to a coordinate into the new coordinate corresponding with the direction.
-    # ---------------------------------------------------------- #
-    direction_to_coord = {
-      "u": [row - i, col],
-      "d": [row + i, col],
-      "l": [row, col - i],
-      "r": [row, col + i]
-    }
-    return direction_to_coord[direction]
+    for i in range(self.selected_ship_length()):
+      coords = self.direction_to_coord(direction, row, col, i)
+      self.selected_ship().coords.append(coords)
 
   # End initializing board and game ================================================
 
   # Shooting functions =============================================================
 
-  def attack_ship(self, coord):
+  # Method to take a turn
+  def __take_turn(self, turn_count):    # Overwriting to allow AI to decide coordinate and removing super shot
+    # Check if the active player's ship list is empty (game over)
+    if self.active_player.ship_list == []:
+      self.end_game()  # End the game
 
+    # print(f"\n ==== Round #{turn_count} ==== Player {self.active_player.id}'s turn ====\n")  # Print the current turn number and active player
+    # print("Your board")  # Print player's own board
+    # self.print_board(self.active_player.board)  # Call print_board() to display active player's board
+    # print("Opp's board")  # Print opponent's board
+    # self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
+
+    # coord = self.get_input(f"Player {self.active_player.id} -- Attack a coordinate: ")  # Prompt the active player for a coordinate to attack
+    # super_shot = False
+
+    # if (coord[-1].lower() == 's'):              # check for super shot flag
+    #   coord = coord[:-1]                           # remove the flag from the coord string
+    #   if self.active_player.super_shot:           # checks if super shot has already been used by the player
+    #     self.active_player.super_shot = False       # sets flag to False to mark that it has now been used
+    #     super_shot = True
+
+    # os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
+
+    # If the input is a valid coordinate
+    coord = self.aiTurn() # return value needs to be set accordingly so that it can be passed into here
+
+    if self.valid_coord(coord):
+      # Check if the coordinate has already been attacked
+      if coord not in self.active_player.attacked_coords:
+        self.active_player.attacked_coords.append(coord)  # Add the coordinate to the list of attacked coordinates
+        self.active_player.attack_ship(coord)  # Call attack_ship() to attack the ship at the coordinate
+        self.turn_count += 1  # Increment the turn count
+        self.__switch_turns()  # Switch turns to the other player
+      # else:
+      #   print("Space already taken. Try again!")  # If the spot has already been attacked, print an error message
+
+    # print("Your board")  # Print player's own board
+    # self.print_board(self.active_player.board)  # Call print_board() to display active player's board
+    # print("Opp's board")  # Print opponent's board
+    # self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
+    # self.br()
+    # print("Pass the screen to the next player")
+
+    # time.sleep(8)
+    # os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
+    self.__take_turn(self.turn_count) # NEEDS TO CHANGE, CURRENTLY OVERWRITING GAMEOBJECT FUNCTION WHICH CAUSES PROBLEMS # Call __take_turn() recursively to continue the game
+
+
+  def attack_ship(self, coord):   # Overwriting to not contain super shot logic
     # need a boalean return for this so we can mark the opponents board when a hit(true)
     row, col = self.coord_translator(coord)
-    if coord[-1].lower() == 's' and self.super_shot:      # add super shot code here
-      self.super_shot = False
-    #   self.super_hit
-    self.hit(coord) if isinstance(self.opp.board[row][col], Ship) else  self.miss(coord)
+    self.hit(row, col) if isinstance(self.opp.board[row][col], Ship) else  self.miss(row, col)
 
-  def hit(self, coord):
-    row, col = self.coord_translator(coord)
-    self.mark_shot(self.opps_board, coord, "H") # Hit your opponent's ship. Tracking it for yourself.
-    self.mark_shot(self.opp.board, coord, "H") # Hit your opponent's ship. Update their board
-    self.opp.board[row][col].hp -= 1 # Decrement opponent's ship health
-    self.update_sunk_ships(self, self.opp, coord)
-
-  def miss(self, coord):
-    self.mark_shot(self.opps_board, coord, "M") # Missed your opponent's ship. Tracking it for yourself.
-    self.mark_shot(self.opp.board, coord, "M") # Missed your opponent's ship. Update their board
-
-  def mark_shot(self, board, coord, result):
-    row, col = self.coord_translator(coord)
-    obj = board[row][col] # Either a Tile or Ship
-    if isinstance(obj, Ship):
-      for tile in obj.tiles: # for literal Tile in the selected Ship.tiles
-        if tile.row == row and tile.col == col: # if the coordinates to be marked match the Tile's coordinates
-          obj = tile
-
-    obj.symbol = result
-
-    if board == self.opps_board: # Mark shot is called twice per hit/miss, so we only want to print the result once
-      self.print_shot_result(result)
-
-  def update_board(self, sinking_player, other_player, row, col):
-    # Loop through each tile of the sinking ship
-    for tile in sinking_player.board[row][col].tiles:
-        # Update the opponent's board to show that the ship has been sunk (mark with "S")
-        other_player.opps_board[tile.row][tile.col].symbol = "S"
-        # Call the sink() method on the ship to mark its tiles as sunk on the sinking player's board
-        sinking_player.board[tile.row][tile.col].sink()
-
-  # Method to update the game state when ships are sunk
-  def update_sunk_ships(self, player, opponent, coord):
-      row, col = self.coord_translator(coord)  # Translate the attacked coordinate into row and column indices
-
-      # Check if the opponent's ship at the attacked coordinate has been sunk
-      if opponent.board[row][col].is_sunk():
-          self.print_shot_result("S")
-          opponent.ship_list.pop()  # Remove the sunk ship from the opponent's ship list
-          self.update_board(opponent, player, row, col)  # Update the boards to show the sunk ship
-
-      # Check if the player's own ship at the attacked coordinate has been sunk
-      elif player.board[row][col].is_sunk():
-          player.ship_list.pop()  # Remove the sunk ship from the player's ship list
-          self.update_board(player, opponent, row, col)  # Update the boards to show the sunk ship
 
   # End shooting functions =========================================================
 

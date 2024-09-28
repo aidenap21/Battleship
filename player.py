@@ -26,6 +26,7 @@ Creation Date:
 from game_object import GameObject # Import the GameObject class from game_object module
 from tile import Tile  # Import the Tile class from tile module
 from ship import Ship # Import the Ship class from ship module
+import os
 
 class Player(GameObject):
   def __init__(self, id, active):  # Constructor for Player class
@@ -93,6 +94,8 @@ class Player(GameObject):
     # Loop until all ships are hidden. Gathers the root coord for the selected ship to be oriented from.
     # ---------------------------------------------------------- #
     while self.ship_list != []: # Hide all ships
+      os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
+
       self.__clear_selected_ship_from_board() # Wipe invalid hide attempts. If the attempt was valid the ship would have been popped off ship_list. Otherwise it will still be the selected ship and the board will be cleaned.
 
       print(f"Player {self.id} - Hiding their {self.selected_ship().name}...")
@@ -173,28 +176,40 @@ class Player(GameObject):
     }
     return direction_to_coord[direction]
 
-  def attack_ship(self, coord):
-
+  def attack_ship(self, coord, super_shot):
     # need a boalean return for this so we can mark the opponents board when a hit(true)
     row, col = self.coord_translator(coord)
-    if coord[-1].lower() == 's' and self.super_shot:      # add super shot code here
-      self.super_shot = False
-    #   self.super_hit
-    self.hit(coord) if isinstance(self.opp.board[row][col], Ship) else  self.miss(coord)
+    if super_shot:            # checks if super shot was passed in as true
+      self.super_shoot(row, col)    # calls super shot function
+    else:                     # normal shot
+      self.hit(row, col) if isinstance(self.opp.board[row][col], Ship) else self.miss(row, col)
+                              # checks if position is a ship and marks a hit or miss otherwise
 
-  def hit(self, coord):
-    row, col = self.coord_translator(coord)
-    self.mark_shot(self.opps_board, coord, "H") # Hit your opponent's ship. Tracking it for yourself.
-    self.mark_shot(self.opp.board, coord, "H") # Hit your opponent's ship. Update their board
+  def hit(self, row, col):
+    self.mark_shot(self.opps_board, row, col, "H") # Hit your opponent's ship. Tracking it for yourself.
+    self.mark_shot(self.opp.board, row, col, "H") # Hit your opponent's ship. Update their board
     self.opp.board[row][col].hp -= 1 # Decrement opponent's ship health
-    self.update_sunk_ships(self, self.opp, coord)
+    self.update_sunk_ships(self, self.opp, row, col)
 
-  def miss(self, coord):
-    self.mark_shot(self.opps_board, coord, "M") # Missed your opponent's ship. Tracking it for yourself.
-    self.mark_shot(self.opp.board, coord, "M") # Missed your opponent's ship. Update their board
+  def super_shoot(self, row, col): # performs a 3x3 super shot
+    for r in range(row - 1, row + 2):     # iterates through rows to shoot in the super shot
+      if r < 0 or r > 9:                    # checks if the current row is off the board and passes
+        continue
+      for c in range(col - 1, col + 2):     # iterates through cols to shoot in the super shot
+        if c < 0 or c > 9:                    # checks if the current col is off the board and passes
+          continue
+        coord = self.col_index_to_letter[col] + str(row + 1)  # converts the row and col back to string coordinates
+        if coord not in self.attacked_coords:     # checks  if the current coord has already been shot or not
+          if isinstance(self.opp.board[r][c], Ship):  # checks if it hits in the current spot
+            self.hit(r, c)                              # calls hit function to mark accordingly
+          else:                                       # missed shot
+            self.miss(r, c)                             # calls miss function to mark accordingly
 
-  def mark_shot(self, board, coord, result):
-    row, col = self.coord_translator(coord)
+  def miss(self, row, col):
+    self.mark_shot(self.opps_board, row, col, "M") # Missed your opponent's ship. Tracking it for yourself.
+    self.mark_shot(self.opp.board, row, col, "M") # Missed your opponent's ship. Update their board
+
+  def mark_shot(self, board, row, col, result):
     obj = board[row][col] # Either a Tile or Ship
     if isinstance(obj, Ship):
       for tile in obj.tiles: # for literal Tile in the selected Ship.tiles
@@ -221,9 +236,7 @@ class Player(GameObject):
           sinking_player.board[tile.row][tile.col].sink()
 
   # Method to update the game state when ships are sunk
-  def update_sunk_ships(self, player, opponent, coord):
-      row, col = self.coord_translator(coord)  # Translate the attacked coordinate into row and column indices
-
+  def update_sunk_ships(self, player, opponent, row, col):
       # Check if the opponent's ship at the attacked coordinate has been sunk
       if opponent.board[row][col].is_sunk():
           self.print_shot_result("S")
