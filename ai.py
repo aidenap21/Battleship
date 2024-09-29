@@ -1,3 +1,27 @@
+"""
+Program Name: Battleship AI
+
+Description: This file defines the AI class which inherits from the Player class. It performs all of the 
+tasks of the Player class but automated and under the hood.
+
+Inputs:
+    - AI difficulty that the user decides
+    - An ID that corresponds to the AI
+    - An flag signifying if it's active or not
+
+    - These 3 pieces of information are passed into the parent class constructor
+
+Output:
+    The user will just see the effects of the AI playing, i.e. where the AI shot
+
+
+Author:
+    Aiden Patel and Andrew Mcferrin
+
+Creation Date:
+    September 25, 2024
+"""
+
 import random
 # from game_object import GameObject
 from player import Player
@@ -92,8 +116,6 @@ class AI(Player):
   def aiTurn(self):   #Function that will handle all behavior for the ai shooting, returns a valid coordinate to shoot at
     alphaCoords = ['A','B','C','D','E','F','G','H','I','J']   #Helper list of the y coord letters
 
-    if self.aiPrevShot != 'none':                 #Check if the game has started and self.aiPrevShot is not 'none'
-      self._shotCoords.append(self.aiPrevShot)    #If the game had not just started, add the value of aiPrevShot into list _shotCoords
 
 #-----------------------------------------------START OF EASY DIFFICULTY ------------------------------------------------------------------------ 
 #Get list of spaces that have been hit so far and choose a letter and number combo that has not been hit

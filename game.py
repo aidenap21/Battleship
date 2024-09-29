@@ -94,11 +94,22 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
       print("Opp's board")  # Print opponent's board
       self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
       self.br()
-      print("Pass the screen to the next player")
+    if (type(self.player2) == Player):
+      passTurn = input("Pass the screen to the next player. Press enter to continue ")  # Create input field to make the user interact with it
+      
+      # passTurn isn't gonna do anything, but it is used to ensure that the user has to click enter
+      # to continue the game. This makes it so we aren't waiting for an arbitrary amount of time in between moves
+    
 
-    if (type(self.player2) == Player):  # doesn't wait when playing against AI
-      time.sleep(8)
-    os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
+    #if (type(self.player2) == Player):  # doesn't wait when playing against AI
+      #time.sleep(8)
+    
+    if (type(self.player2) != Player and type(self.active_player) == Player) :  # If you're playing against an ai and it's the player's turn
+      aiTurn = input("Press enter to let the AI shoot ")  # Same input field stuff as before!
+      os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
+      print("AI is Shooting.....")
+      time.sleep(2) # Keep it on the screen for a couple seconds so the user can read it
+      os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
 
     self.__switch_turns()  # Switch turns to the other player
     self.__take_turn(self.turn_count)  # Call __take_turn() recursively to continue the game
@@ -115,14 +126,19 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
     # Loop through each player in player_bank
     for player in self.player_bank:
       player.hide_ships()  # Call hide_ships() for each player to hide their ships
+      
       os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
       print(f"Player {player.id} - All ships are hidden...")  # Print that all ships are hidden
       self.print_board(player.board)  # Print the player's board after ships are hidden
       self.br()  # Print a break line
+      if (type(self.player2) == Player):
+        passTurn = input("Pass the screen to the next player. Press enter to continue ")
 
-      if (type(self.player2) == Player):  # doesn't wait when playing against AI
-        print("Pass the screen to the next player")
-        time.sleep(5)
+
+      #if (type(self.player2) == Player):  # doesn't wait when playing against AI
+      #  print("Pass the screen to the next player")
+      #  time.sleep(5)
+      
       os.system('cls' if os.name == 'nt' else 'clear')
 
     if (type(self.player2) != Player): # runs for AI

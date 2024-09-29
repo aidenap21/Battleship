@@ -27,6 +27,7 @@ from game_object import GameObject # Import the GameObject class from game_objec
 from tile import Tile  # Import the Tile class from tile module
 from ship import Ship # Import the Ship class from ship module
 import os
+import time
 
 class Player(GameObject):
   def __init__(self, id, active):  # Constructor for Player class
@@ -116,7 +117,8 @@ class Player(GameObject):
     if self.hide_selected_ship_in_valid_location(): # place the ship if oriented in a valid position
       self.ship_list.pop(0) # Remove it from our list of remaining ships
     else:
-      print("You cannot place your ship out of bounds or over another ship. Try again.")
+      invalid = input("You cannot place your ship out of bounds or over another ship. Press Enter to Try Again.") # Same input buffering as before
+      
       self.selected_ship().coords = []
 
     self.print_remaining_ships_to_hide()
