@@ -52,8 +52,41 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
     self.__set_ship_lists()  # Regenerate the ship lists for the game
     self.__take_turn(1)  # Start the game by taking the first turn
 
+  # Helper function to determine good input without ending turn (Simplest solution I could think of)
+  def valid_input(self, input):
+    if (len(input) in [2,3,4]): # Valid shots are either 2,3, or 4 characters long
+      if len(input) == 2:
+        try:
+          col = input[0].upper()  # Extract the column letter and convert to uppercase #this is the only form input of len 2 and can take
+          row = int(input[1:]) # Extract the row number and convert to integer
+        except:
+          return False # If extraction fails, return False
+      elif len(input) == 3:
+        try:#using try except for type checkning because why not.
+          col = input[0].upper()  #check if the first char is a char, if not, error to false
+          if input[2].lower() == "s": #check if last char is s, if it is
+            row = int(input[1]) # check if the middle char is an int, if not, error to false
+          else:                       #if last char isn't s
+            row = int(input[1:])# check if last two chars are ints, if not, error to false
+        except:
+          return False # otherwise the error was valid and return false
+
+      elif len(input) == 4:
+        try:
+          col = input[0].upper()  # check if first char is str, if not error to false
+          row = int(input[1:2]) #check if middle chars convert to int, if not error to false
+          if input[3].lower() != "s": #check that the last character is s, if not, return false
+            return False
+        except:
+          return False # otherwise the error was valid and return false
+    else:
+      return False #if input is not 2,3 or 4 in length, return false
+    return True  #If you got through all the checks, it is a valid input
+
+
   # Method to take a turn
   def __take_turn(self, turn_count):
+    valid_shot = False #used to make sure player gets to shoot on their turn
     # Check if the active player's ship list is empty (game over)
     if self.active_player.ship_list == []:
       self.end_game()  # End the game
@@ -64,29 +97,43 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
       self.print_board(self.active_player.board)  # Call print_board() to display active player's board
       print("Opp's board")  # Print opponent's board
       self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
+    super_shot_state = self.active_player.super_shot
 
-    coord = self.active_player.get_input(f"Player {self.active_player.id} -- Attack a coordinate: ")  # Prompt the active player for a coordinate to attack
-    super_shot = False
+    while not valid_shot: #if coord shot is not valid
+      coord = self.active_player.get_input(f"Player {self.active_player.id} -- Attack a coordinate: ")  # Prompt the active player for a coordinate to attack
+      super_shot = False  # instantiate super shot
+      valid_shot = self.valid_input(coord) #determine validity of shot
+      if not valid_shot:#if not a valid shot, go back around
+        print("Your coordinate must be a letter-number pair (e.g. A8)\nOr for a supershot the for must be (A8s or A8S)")
+        continue
+      if (coord[-1].lower() == 's') and valid_shot:              # check for super shot flag #And check if
+        coord = coord[:-1]                           # remove the flag from the coord string
+        if self.active_player.super_shot:           # checks if super shot has already been used by the player
+          self.active_player.super_shot = False       # sets flag to False to mark that it has now been used
+          super_shot = True
 
-    if (coord[-1].lower() == 's'):              # check for super shot flag
-      coord = coord[:-1]                           # remove the flag from the coord string
-      if self.active_player.super_shot:           # checks if super shot has already been used by the player
-        self.active_player.super_shot = False       # sets flag to False to mark that it has now been used
-        super_shot = True
+          
+      # If the input is a valid coordinate
+      if self.valid_coord(coord):
+        # Check if the coordinate has already been attacked
+        if coord not in self.active_player.attacked_coords:
+          self.active_player.attacked_coords.append(coord)  # Add the coordinate to the list of attacked coordinates
+          self.active_player.attack_ship(coord, super_shot)  # Call attack_ship() to attack the ship at the coordinate
+          if (type(self.active_player) == Player):  # only prints for player type and not AI
+            print("=" * 50)  # Print a separator line
+          self.turn_count += 1  # Increment the turn count
+        else:
+          valid_shot = False #keep looping on bad input
+          if super_shot: #Give player back super shot in case of bad input
+            self.active_player.super_shot = super_shot_state
+          print("Space already taken. Try again!")  # If the spot has already been attacked, print an error message
+      else: #makes the shot logic loop ig
+        valid_shot = False #keep looping
+        if super_shot: #Give player back super shot in case of bad input
+            self.active_player.super_shot = super_shot_state
+        continue
 
-    os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal
-
-    # If the input is a valid coordinate
-    if self.valid_coord(coord):
-      # Check if the coordinate has already been attacked
-      if coord not in self.active_player.attacked_coords:
-        self.active_player.attacked_coords.append(coord)  # Add the coordinate to the list of attacked coordinates
-        self.active_player.attack_ship(coord, super_shot)  # Call attack_ship() to attack the ship at the coordinate
-        if (type(self.active_player) == Player):  # only prints for player type and not AI
-          print("=" * 50)  # Print a separator line
-        self.turn_count += 1  # Increment the turn count
-      else:
-        print("Space already taken. Try again!")  # If the spot has already been attacked, print an error message
+    os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal #clear only after shot logic is finished
 
     if (type(self.active_player) == Player):  # only prints for player type and not AI
       print("Your board")  # Print player's own board
@@ -94,8 +141,15 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
       print("Opp's board")  # Print opponent's board
       self.print_board(self.active_player.opps_board)  # Call print_board() to display the opponent's board
       self.br()
+
+    #logic to end game immediately if all of oppents ships are sunk
+    if self.active_player.opp.ship_list == []: #check if all opponents ships are sunk
+      self.__switch_turns() #switch player so end_game works
+      self.end_game() #end game with player as winner
+
     if (type(self.player2) == Player):
       passTurn = input("Pass the screen to the next player. Press enter to continue ")  # Create input field to make the user interact with it
+      os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal #clear old player screen
       
       # passTurn isn't gonna do anything, but it is used to ensure that the user has to click enter
       # to continue the game. This makes it so we aren't waiting for an arbitrary amount of time in between moves

@@ -169,7 +169,7 @@ class GameObject:  # Define the GameObject class
   # Method to check if the user wants to quit the game
   def quit(self, input):
     # If the input matches any quit command
-    if input in ["exit", "q", "quit", "EXIT", "Q", "QUIT"]:
+    if input.lower() in ["exit", "q", "quit"]:
       exit()  # Exit the program
 
   # Method to get input from the user and check for quit commands

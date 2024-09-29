@@ -19,6 +19,9 @@ Creation Date:
 from player import Player  # Import the Player class from the player module
 from game import Game  # Import the Game class from the game module
 from ai import AI
+import os
+
+os.system('cls' if os.name == 'nt' else 'clear')  # clears terminal # makes a nice start states
 
 # Initialize Player 1 with ID 1 and set them as the active player
 p1 = Player(1, True)
