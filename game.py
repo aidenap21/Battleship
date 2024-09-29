@@ -125,6 +125,9 @@ class Game(GameObject):  # Define the Game class, inheriting from GameObject
         time.sleep(5)
       os.system('cls' if os.name == 'nt' else 'clear')
 
+    if (type(self.player2) != Player): # runs for AI
+      self.player2.locate_opp_ships()     # finds ships for AI to use in hard mode
+
   # Method to get the number of ships from the user
   def __get_num_ships(self):
     # Keep asking for the number of ships until a valid number (1-5) is entered
